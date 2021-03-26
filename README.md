@@ -1,3 +1,5 @@
+[![CI](https://github.com/buzzlighter97/foodgram-project/actions/workflows/main.yml/badge.svg)](https://github.com/buzzlighter97/foodgram-project/actions/workflows/main.yml)
+
 # Foodgram.
 
   Foodgram is a service where you can create and discover new recipes to cook.
