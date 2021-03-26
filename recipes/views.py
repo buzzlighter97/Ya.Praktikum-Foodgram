@@ -1,266 +1,181 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from foodgram_project.settings import COUNT_RECIPE
-from recipes.forms import RecipeForm
-from recipes.models import (Favorite, Follow, Recipe, RecipeIngredient,
-                            ShoppingList)
-from recipes.utils import tags_filter
+from foodgram.settings import RECIPES_ON_PAGE
 from users.models import User
+
+from recipes.forms import RecipeForm
+from recipes.models import Recipe, Ingredient, IngredientAmount, Tag
+from recipes.utils import filter_tag, get_dict_ingredients
 
 
 def index(request):
-    shopping_list_ids = None
-    favorites_ids = None
-    recipes, tag = tags_filter(request)
-
-    paginator = Paginator(recipes, COUNT_RECIPE)
+    recipe_list, tags = filter_tag(request)
+    paginator = Paginator(recipe_list, RECIPES_ON_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-
-    if not request.user.is_anonymous:
-        user = request.user
-        shopping_list_ids = (ShoppingList.objects
-                             .filter(user=user)
-                             .values_list('recipe', flat=True))
-        favorites_ids = (Favorite.objects
-                         .filter(user=user)
-                         .values_list('recipe', flat=True))
-
-    context = {
-        'tag': tag,
-        'shopping_list_ids': shopping_list_ids,
-        'favorites_ids': favorites_ids,
-        'page': page,
-        'paginator': paginator
-    }
-
-    return render(request, 'index.html', context)
-
-
-def author_recipes(request, slug):
-    shopping_list_ids = None
-    favorites_ids = None
-    followers_ids = None
-    recipes, tag = tags_filter(request, author=slug)
-    author_id = get_object_or_404(User, username=slug).id
-
-    paginator = Paginator(recipes, COUNT_RECIPE)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-
-    if not request.user.is_anonymous:
-        user = request.user
-        shopping_list_ids = (ShoppingList.objects
-                             .filter(user=user)
-                             .values_list('recipe', flat=True))
-        favorites_ids = (Favorite.objects
-                         .filter(user=user)
-                         .values_list('recipe', flat=True))
-        followers_ids = (Follow.objects
-                         .filter(user=user)
-                         .values_list('author', flat=True))
-
-    context = {
-        'tag': tag,
-        'shopping_list_ids': shopping_list_ids,
-        'favorites_ids': favorites_ids,
-        'author': slug,
-        'author_id': author_id,
-        'followers_ids': followers_ids,
-        'page': page,
-        'paginator': paginator
-    }
-
-    return render(request, 'author_recipes.html', context)
-
-
-def single_recipe(request, slug):
-    favorites_ids = None
-    shopping_list_ids = None
-    followers_ids = None
-    recipe = get_object_or_404(Recipe, slug=slug)
-    ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-
-    if not request.user.is_anonymous:
-        user = request.user
-        favorites_ids = (Favorite.objects
-                         .filter(user=user)
-                         .values_list('recipe', flat=True))
-        shopping_list_ids = (ShoppingList.objects
-                             .filter(user=user)
-                             .values_list('recipe', flat=True))
-        followers_ids = (Follow.objects
-                         .filter(user=user)
-                         .values_list('author', flat=True))
-
-    context = {
-        'recipe': recipe,
-        'favorites_ids': favorites_ids,
-        'shopping_list_ids': shopping_list_ids,
-        'followers_ids': followers_ids,
-        'ingredients': ingredients,
-    }
-    return render(request, 'single_recipe.html', context)
+    return render(
+        request,
+        'indexAuth.html',
+        {
+            'page': page,
+            'paginator': paginator,
+            'tags': tags,
+        },
+    )
 
 
 @login_required
 def create_recipe(request):
-    if request.method == 'POST':
-        recipe_form = RecipeForm(
-            request.POST,
-            request.FILES,
-            username=request.user
-        )
-        if recipe_form.is_valid():
-            recipe_form.save()
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
+    user = get_object_or_404(User, username=request.user)
+    ingredients = get_dict_ingredients(request)
+    if form.is_valid():
+        recipe = form.save(commit=False)
+        recipe.author = user
+        recipe.save()
 
-        return redirect('index')
-    else:
-        form = RecipeForm(username=request.user)
+        tags = form.cleaned_data['tag']
+        for tag in tags:
+            recipe_tag = Tag(recipe=recipe, title=tag)
+            recipe_tag.save()
 
-    user = request.user
-    shopping_list_ids = (ShoppingList.objects
-                         .filter(user=user)
-                         .values_list('recipe', flat=True))
-    context = {
-        'form': form,
-        'shopping_list_ids': shopping_list_ids,
-    }
-    return render(request, 'create_recipe.html', context=context)
+        for key, value in ingredients.items():
+            ingredient = get_object_or_404(Ingredient, title=key)
+            recipe_ing = IngredientAmount(
+                recipe=recipe, ingredient=ingredient, amount=value
+            )
+            recipe_ing.save()
+        form.save_m2m()
+        return redirect('recipes')
+    return render(request, 'formRecipe.html', {'form': form})
+
+
+def recipe_view(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    return render(request, 'singlePage.html', {'recipe': recipe})
+
+
+def profile(request, username):
+    author = get_object_or_404(User, username=username)
+    recipe_list, tags = filter_tag(request)
+    recipe_list = recipe_list.filter(author=author)
+    paginator = Paginator(recipe_list, RECIPES_ON_PAGE)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(
+        request,
+        'authorRecipe.html',
+        {
+            'page': page,
+            'paginator': paginator,
+            'username': username,
+            'tags': tags,
+        },
+    )
 
 
 @login_required
-def edit_recipe(request, slug):
-    recipe = get_object_or_404(Recipe, slug=slug)
-    ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-    my_shopping_list = ShoppingList.objects.filter(user=request.user)
+def recipe_edit(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    if request.user != recipe.author:
+        return redirect('recipe_view', recipe_id=recipe_id)
+    form = RecipeForm(
+        request.POST or None, files=request.FILES or None, instance=recipe
+    )
+    ingredients = get_dict_ingredients(request)
 
-    if request.method == 'POST':
-        RecipeIngredient.objects.filter(recipe=recipe).delete()
+    if form.is_valid():
+        IngredientAmount.objects.filter(recipe=recipe).delete()
+        Tag.objects.filter(recipe=recipe).delete()
+        recipe = form.save(commit=False)
+        recipe.author = request.user
+        recipe.save()
 
-        recipe_form = RecipeForm(
-            request.POST,
-            request.FILES,
-            username=request.user,
-            instance=recipe,
-        )
+        tags = form.cleaned_data['tag']
+        for tag in tags:
+            recipe_tag = Tag(recipe=recipe, title=tag)
+            recipe_tag.save()
 
-        if recipe_form.is_valid():
-            recipe_form.save()
+        for key, value in ingredients.items():
+            ingredient = get_object_or_404(Ingredient, title=key)
+            recipe_ing = IngredientAmount(
+                recipe=recipe, ingredient=ingredient, amount=value
+            )
+            recipe_ing.save()
+        form.save_m2m()
+        return redirect('recipe_view', recipe_id=recipe_id)
+    tags = list(recipe.tags.values_list('title', flat=True))
+    return render(
+        request,
+        'formChangeRecipe.html',
+        {'form': form, 'recipe': recipe, 'tags': tags},
+    )
 
-        return redirect('index')
-    else:
-        form = RecipeForm(username=request.user, instance=recipe)
 
-    context = {
-        'form': form,
-        'recipe': recipe,
-        'ingredients': ingredients,
-        'shopping_list_ids': my_shopping_list,
-    }
-    return render(request, 'edit_recipe.html', context)
+@login_required
+def recipe_delete(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    if request.user == recipe.author:
+        recipe.delete()
+        return redirect('profile', username=request.user.username)
+    return redirect('recipes')
 
 
 @login_required
 def favorites(request):
-    user = request.user
-    favourites = Favorite.objects.filter(user=user)
-    if not favourites:
-        favourites = [-1]
-
-    recipes, tag = tags_filter(request, favourites=favourites)
-    paginator = Paginator(recipes, COUNT_RECIPE)
+    recipe_list, tags = filter_tag(request)
+    recipe_list = recipe_list.filter(in_favorite__user=request.user)
+    paginator = Paginator(recipe_list, RECIPES_ON_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-
-    shopping_list_ids = (ShoppingList.objects
-                         .filter(user=user)
-                         .values_list('recipe', flat=True))
-    favorites_ids = (Favorite.objects
-                     .filter(user=user)
-                     .values_list('recipe', flat=True))
-
-    context = {
-        'tag': tag,
-        'shopping_list_ids': shopping_list_ids,
-        'favorites_ids': favorites_ids,
-        'page': page,
-        'paginator': paginator
-    }
-    return render(request, 'favorite.html', context)
-
-
-@login_required
-def followers(request):
-    user = request.user
-
-    my_followers = Follow.objects.filter(user=user)
-    recipes = Recipe.objects.filter(author__following__in=my_followers)
-    shopping_list_ids = (ShoppingList.objects
-                         .filter(user=user)
-                         .values_list('recipe', flat=True))
-    context = {
-        'my_followers': my_followers,
-        'recipes': recipes,
-        'shopping_list_ids': shopping_list_ids,
-    }
-    return render(request, 'followers.html', context)
-
-
-def shopping_list(request):
-    user = request.user
-    my_shopping_list = ShoppingList.objects.filter(user=user)
-    recipes = Recipe.objects.filter(shopping_list__in=my_shopping_list)
-
-    context = {
-        'shopping_list_ids': my_shopping_list,
-        'recipes': recipes,
-    }
-    return render(request, 'shopping_list.html', context=context)
-
-
-def remove_recipe(request, slug):
-    Recipe.objects.filter(slug=slug).delete()
-    return redirect('index')
-
-
-def download_shopping_list(request):
-    ingredients = (RecipeIngredient.objects
-                   .filter(recipe__shopping_list__user=request.user)
-                   .select_related('ingredient'))
-    items = {}
-    for item in ingredients:
-        title = item.ingredient.title
-        dimension = item.ingredient.dimension
-        amount = item.amount
-        if not items.get(title):
-            items[title] = [amount, dimension]
-        else:
-            items[title] = [items[title][0] + amount, dimension]
-    if items:
-        file_data = [f'{k.capitalize()}: {v[0]} {v[1]}\n'
-                     for k, v in items.items()]
-        response = HttpResponse(
-            file_data,
-            content_type='application/text charset=utf-8'
-        )
-        response['Content-Disposition'] = ('attachment; '
-                                           'filename="shopping_list.txt"')
-        return response
-    return redirect('index')
-
-
-def page_not_found(request, exception):
     return render(
         request,
-        'errors/404.html',
-        {'path': request.path},
-        status=404
+        'favorite.html',
+        {'page': page, 'paginator': paginator, 'tags': tags},
     )
 
 
-def server_error(request):
-    return render(request, 'errors/500.html', status=500)
+@login_required
+def shopping_list(request):
+    recipe_list, tags = filter_tag(request)
+    recipe_list = recipe_list.filter(in_purchases__user=request.user)
+    return render(
+        request, 'shopList.html', {'recipe_list': recipe_list, 'tags': tags}
+    )
+
+
+@login_required
+def subscriptions(request):
+    authors = User.objects.filter(following__user=request.user)
+    paginator = Paginator(authors, RECIPES_ON_PAGE)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(
+        request, 'myFollow.html', {'page': page, 'paginator': paginator}
+    )
+
+
+def get_ingredients(request):
+    text = ''
+    list = (
+        Recipe.objects.filter(in_purchases__user=request.user)
+        .order_by("ingredients__title")
+        .values("ingredients__title", "ingredients__dimension")
+        .annotate(amount=Sum("quantity__amount"))
+    )
+
+    for ingredient in list:
+        text += (
+            f"{ingredient['ingredients__title']} "
+            f"({ingredient['ingredients__dimension']})"
+            f" \u2014 {ingredient['amount']} \n"
+        )
+
+    filename = "ingredients.txt"
+    response = HttpResponse(text, content_type="text/plain")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+    return response

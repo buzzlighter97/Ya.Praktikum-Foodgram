@@ -1,75 +1,78 @@
-from rest_framework import status
-from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from api.serializers import (FavoriteSerializer, FollowSerializer,
-                             IngredientSerializer, ShoppingListSerializer)
-from recipes.models import Favorite, Follow, Ingredient, ShoppingList
-
-
-@api_view(['GET'])
-def ingredients(request):
-    query = request.GET.get('query')
-    ingredient = Ingredient.objects.filter(title__istartswith=query)
-    serializer = IngredientSerializer(ingredient, many=True)
-    return Response(serializer.data)
+from api.models import Favorite, Purchase, Subscribe
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             PurchaseSerializer, SubscribeSerializer)
+from recipes.models import Ingredient, Recipe
+from users.models import User
 
 
-@api_view(['POST', 'DELETE'])
-def purchases(request, id=None):
-    if request.method == 'POST':
-        data = {
-            'recipe': request.data['id'],
-            'user': request.user.id
-        }
-        serializer = ShoppingListSerializer(data=data)
+class CreateResponseView:
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'success': True}, status=status.HTTP_201_CREATED)
-        return Response({'fail': False}, status=status.HTTP_400_BAD_REQUEST)
-
-    if request.method == 'DELETE':
-        item = ShoppingList.objects.get(recipe__id=id)
-        if item.delete():
-            return Response({'success': True}, status=status.HTTP_200_OK)
-        return Response({'fail': False}, status=status.HTTP_400_BAD_REQUEST)
+            self.perform_create(serializer)
+            return Response({"success": True})
+        return Response({"success": False})
 
 
-@api_view(['POST', 'DELETE'])
-def favorites(request, id=None):
-    user = request.user
-    if request.method == 'POST':
-        data = {
-            'recipe': request.data['id'],
-            'user': user.id
-        }
-        serializer = FavoriteSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'success': True}, status=status.HTTP_200_OK)
-        return Response({'fail': False}, status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'DELETE':
-        item = Favorite.objects.get(user=user, recipe__id=id)
-        if item.delete():
-            return Response({'success': True}, status=status.HTTP_200_OK)
-        return Response({'fail': False}, status=status.HTTP_400_BAD_REQUEST)
+class IngredientAPIView(generics.ListAPIView):
+    """Класс для поиска в базе ингредиентов по их названиям."""
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['^title', ]
 
 
-@api_view(['POST', 'DELETE'])
-def subscriptions(request, id=None):
-    user = request.user
-    if request.method == 'POST':
-        data = {
-            'author': request.data['id'],
-            'user': user.id
-        }
-        serializer = FollowSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'success': True}, status=status.HTTP_200_OK)
-        return Response({'fail': False}, status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'DELETE':
-        item = Follow.objects.get(user=user, author__id=id)
-        if item.delete():
-            return Response({'success': True}, status=status.HTTP_200_OK)
-        return Response({'fail': False}, status=status.HTTP_400_BAD_REQUEST)
+class FavoriteCreateView(CreateResponseView, generics.CreateAPIView):
+    """Класс для добавления рецепта в избранное."""
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
+
+
+class FavoriteDeleteView(APIView):
+    """Класс для удаления рецепта из избранного."""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        recipe = get_object_or_404(Recipe, id=id)
+        favorite = recipe.in_favorite.filter(user=request.user)
+        return Response({"success": bool(favorite.delete())})
+
+
+class PurchaseCreateView(CreateResponseView, generics.CreateAPIView):
+    """Класс для добавления рецепта в список покупок."""
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer
+
+
+class PurchaseDeleteView(APIView):
+    """Класс для удаления рецепта из списка покупок."""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        recipe = get_object_or_404(Recipe, id=id)
+        purchase = recipe.in_purchases.filter(user=request.user)
+        return Response({"success": bool(purchase.delete())})
+
+
+class SubscribeCreateView(CreateResponseView, generics.CreateAPIView):
+    """Класс для добавления автора в подписку."""
+    queryset = Subscribe.objects.all()
+    serializer_class = SubscribeSerializer
+
+
+class SubscribeDeleteView(APIView):
+    """Класс для удаления автора из подписки."""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        author = get_object_or_404(User, id=id)
+        subscribe = author.following.filter(user=request.user)
+        return Response({"success": bool(subscribe.delete())})

@@ -1,8 +1,13 @@
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
+from django.contrib import admin, auth
 
 from users.models import User
 
-admin.site.register(User, UserAdmin)
-admin.site.unregister(Group)
+
+class Admin(auth.admin.UserAdmin):
+    list_filter = ('username', 'email',)
+    search_fields = ('^username', '^email',)
+    ordering = ('username',)
+
+
+admin.site.register(User, Admin)
+admin.site.unregister(auth.models.Group)

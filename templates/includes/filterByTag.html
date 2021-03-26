@@ -1,0 +1,29 @@
+<ul class="tags">
+    <li class="tags__item">
+        <a  id="breakfast"
+            class="tags__checkbox tags__checkbox_style_orange
+                {% if 'b' in tags %}tags__checkbox_active{% endif %}"
+            href="{% if 'b' in tags %}{{ url_value }}?tags={{ tags|cut:'b' }}
+                {% else %}{{ url_value }}?tags={{ tags|add:'b' }}{% endif %}">
+        </a>
+        <span class="tags__label">Завтрак</span>
+    </li>
+    <li class="tags__item">
+        <a  id="lunch"
+            class="tags__checkbox tags__checkbox_style_green
+                {% if 'l' in tags %}tags__checkbox_active{% endif %}"
+            href="{% if 'l' in tags %}{{ url_value }}?tags={{ tags|cut:'l' }}
+                {% else %}{{ url_value }}?tags={{ tags|add:'l' }}{% endif %}">
+        </a>
+        <span for="lunch" class="tags__label">Обед</span>
+    </li>
+    <li class="tags__item">
+        <a  id="dinner"
+            class="tags__checkbox tags__checkbox_style_purple
+                {% if 'd' in tags %}tags__checkbox_active{% endif %}"
+            href="{% if 'd' in tags %}{{ url_value }}?tags={{ tags|cut:'d' }}
+                {% else %}{{ url_value }}?tags={{ tags|add:'d' }}{% endif %}">
+        </a>
+        <label for="dinner" class="tags__label">Ужин</label>
+    </li>
+</ul>

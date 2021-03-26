@@ -1,0 +1,15 @@
+.single-card__section-text {
+    font-size: 16px;
+    line-height: 26px;
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    overflow-wrap: normal;  /* не поддерживает IE, Firefox; является копией word-wrap */ 
+    word-wrap: normal;
+    word-break: break-all;  /* не поддерживает Opera12.14, значение keep-all не поддерживается IE, Chrome */ 
+    line-break: auto;  /* нет поддержки для русского языка */ 
+    hyphens: manual;  /* значение auto не поддерживается Chrome */ 
+    color: #000000;
+    margin: 0 0 27px;
+    padding: 0;
+}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Мои подписки{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'pages/myFollow.css' %}">
+{% endblock %}
+{% block content %}
+{% load user_filters %}
+<div class="main__header">
+    <h1 class="main__title">Мои подписки</h1>
+</div>
+<div class="card-list">
+    {% for author in page %}
+    <div class="card-user" data-author="{{ author.id }}">
+        <div class="card-user__header">
+            <h2 class="card-user__title">{{ author.get_full_name }}</h2>
+        </div>
+        <div class="card-user__body">
+            <ul class="card-user__items">
+                <li class="card-user__item">
+                    {% load thumbnail %}
+                    {% for recipe in author.recipes.all %}
+                    {% thumbnail recipe.image "960x500" crop="center" as im %}
+                    {% if forloop.counter < 4 %}
+                    <div class="recipe">
+                        <img src="{{ im.url }}" alt="Картинка" class="recipe__image">
+                        <h3 class="recipe__title">{{ recipe.title }}</h3>
+                        <p class="recipe__text"><span class="icon-time"></span> {{ recipe.duration }} мин.</p>
+                    </div>
+                    {% endif %}
+                    {% endthumbnail %}
+                    {% endfor %}
+                </li>
+                <li class="card-user__item">
+                    <a href="{% url 'profile' author.username %}" class="card-user__link link">Еще рецепты...</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-user__footer">
+            {% if author|in_subscription:request.user %}
+            <button class="button button_style_light-blue button_size_auto" name="subscribe">Отписаться</button>
+            {% else %}
+            <button class="button button_style_blue button_size_auto" name="subscribe" data-out>Подписаться на автора</button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% if page.has_other_pages %}
+    {% include "includes/paginator.html" with items=page paginator=paginator tags=tags %}
+{% endif %}
+{% endblock content %}
+{% block style %}
+    <script src="{% static 'js/config/config.js' %}"></script>
+    <script src="{% static 'js/components/MainCards.js' %}"></script>
+    <script src="{% static 'js/components/MyFollow.js' %}"></script>
+    <script src="{% static 'js/components/Subscribe.js' %}"></script>
+    <script src="{% static 'js/components/Header.js' %}"></script>
+    <script src="{% static 'js/api/Api.js' %}"></script>
+    <script src="{% static 'myFollow.js' %}"></script>
+{% endblock style %}

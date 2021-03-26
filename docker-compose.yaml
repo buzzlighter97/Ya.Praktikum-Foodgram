@@ -1,8 +1,8 @@
-version: "3.3"
+version: '3.8'
 
 volumes:
   postgres_data:
-  static:
+  staticfiles:
   media:
 
 services:
@@ -10,31 +10,29 @@ services:
     image: postgres:12.4
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    ports:
+    - 5432:5432
     env_file:
       - ./.env
-    restart: always
 
   web:
-    image: peacedalubof/foodgram-project
-    volumes:
-      - static:/code/static
-      - media:/code/media
+    build: .
     restart: always
-    expose:
-      - 8000
+    volumes:
+      - staticfiles:/code/static
+      - media:/code/media
     depends_on:
       - db
     env_file:
       - ./.env
 
   nginx:
-    image: nginx:1.19.6
+    image: nginx:1.19.5
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - static:/code/static
-      - media:/code/media
+      - staticfiles:/static
+      - media:/media
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "8080:80"
+    - 80:80
     depends_on:
       - web
-    restart: always

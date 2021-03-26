@@ -1,55 +1,62 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from recipes.models import (Favorite, Follow, Ingredient, Recipe,
-                            RecipeIngredient, ShoppingList)
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 
 
-class RecipeIngredientInline(admin.TabularInline):
-    model = RecipeIngredient
+class IngredientAmountInline(admin.TabularInline):
+    model = IngredientAmount
     min_num = 1
+    extra = 0
+    verbose_name = 'Ингредиент'
 
 
-@admin.register(Recipe)
+class TagInline(admin.TabularInline):
+    model = Tag
+    min_num = 1
+    extra = 0
+
+
 class RecipeAdmin(admin.ModelAdmin):
-    def favorite_count(self, obj):
-        return obj.favorite_count
-
-    favorite_count.short_description = "Счетчик избранного"
+    inlines = (IngredientAmountInline, TagInline)
+    list_display = (
+        'id', 'title', 'author', 'get_favorite',
+        'image_img', 'duration', 'get_tag',
+    )
+    list_filter = ('author', 'tags__title', )
+    search_fields = ('title', 'author__username', )
+    autocomplete_fields = ('author', )
+    ordering = ('-pub_date', )
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.annotate(favorite_count=Count("favourite"))
-        return queryset
+        return queryset.annotate(_get_favorite=Count('in_favorite'))
 
-    list_display = ('name', 'author', 'favorite_count')
-    search_fields = ('name', 'author__username', 'tag')
-    inlines = [
-        RecipeIngredientInline,
-    ]
+    def get_tag(self, obj):
+        return list(obj.tags.values_list('title', flat=True))
+
+    def get_favorite(self, obj):
+        return obj._get_favorite
+
+    get_tag.short_description = 'Теги'
+    get_favorite.short_description = 'Добавлен в избранное, раз'
+    get_favorite.admin_order_field = '_get_favorite'
 
 
-@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('title', 'dimension')
-    search_fields = ('title',)
+    list_display = ('id', 'title', 'dimension', )
+    search_fields = ('^title', )
 
 
-@admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_filter = ('amount',)
+    list_display = ('id', 'ingredient', 'recipe', 'amount', )
 
 
-@admin.register(ShoppingList)
-class ShoppingListAdmin(admin.ModelAdmin):
-    list_filter = ('user',)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'recipe', )
 
 
-@admin.register(Follow)
-class FollowAdmin(admin.ModelAdmin):
-    list_filter = ('user',)
-
-
-@admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
-    list_filter = ('user',)
+admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(IngredientAmount, RecipeIngredientAdmin)
+admin.site.register(Tag, TagAdmin)

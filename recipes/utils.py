@@ -1,34 +1,20 @@
+from decimal import Decimal
+
 from recipes.models import Recipe
 
 
-def tags_filter(request, author=None, favourites=None):
-    state = ['breakfast', 'lunch', 'dinner']
-    breakfast = request.GET.get('breakfast')
-    lunch = request.GET.get('lunch')
-    dinner = request.GET.get('dinner')
-    if breakfast:
-        state[0] = None
-    if lunch:
-        state[1] = None
-    if dinner:
-        state[2] = None
+def filter_tag(request):
+    tags = request.GET.get('tags', 'bld')
+    recipe_list = Recipe.objects.filter(tags__slug__in=tags).distinct()
+    return recipe_list, tags
 
-    if author:
-        recipes = (Recipe.objects
-                   .select_related('author')
-                   .prefetch_related('recipe_ingredient')
-                   .filter(tag__overlap=state, author__username=author))
-    elif favourites:
-        recipes = (Recipe.objects
-                   .select_related('author')
-                   .prefetch_related('recipe_ingredient')
-                   .filter(tag__overlap=state, favourite__in=favourites))
-    else:
-        recipes = (Recipe.objects
-                   .select_related('author')
-                   .prefetch_related('recipe_ingredient')
-                   .filter(tag__overlap=state))
 
-    tag = {key: 'tags__checkbox_active' for key in state}
-
-    return recipes, tag
+def get_dict_ingredients(request):
+    ingredients = {}
+    for key, ingredient_name in request.POST.items():
+        if 'nameIngredient' in key:
+            _ = key.split('_')
+            ingredients[ingredient_name] = Decimal(
+                request.POST[f'valueIngredient_{_[1]}'].replace(',', '.')
+            )
+    return ingredients

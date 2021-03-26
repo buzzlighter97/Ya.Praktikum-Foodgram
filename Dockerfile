@@ -1,7 +1,6 @@
-FROM python:3.8.5
+FROM python:3.9.1
 
 WORKDIR /code
-COPY . .
+COPY . /code
 RUN pip install -r requirements.txt
-RUN python manage.py collectstatic --noinput
-CMD gunicorn foodgram_project.wsgi:application --bind 0.0.0.0:8000
+CMD gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000

@@ -1,17 +1,48 @@
-from django.urls import path
+from django.urls import include, path
 
 from api import views
 
 urlpatterns = [
-    path('purchases/', views.purchases, name='create_purchase'),
-    path('purchases/<int:id>/', views.purchases, name='delete_purchase'),
-    path('subscriptions/', views.subscriptions, name='create_subscription'),
     path(
-        'subscriptions/<int:id>/',
-        views.subscriptions,
-        name='delete_subscription'
-    ),
-    path('favorites/', views.favorites, name='create_favorite'),
-    path('favorites/<int:id>/', views.favorites, name='delete_favorite'),
-    path('ingredients/', views.ingredients, name='list_ingredients'),
+        'v1/',
+        include(
+            [
+                path(
+                    'ingredients/',
+                    views.IngredientAPIView.as_view(),
+                    name='ingredients'
+                ),
+                path(
+                    'favorites/',
+                    views.FavoriteCreateView.as_view(),
+                    name='favorite_create'
+                ),
+                path(
+                    'favorites/<int:id>/',
+                    views.FavoriteDeleteView.as_view(),
+                    name='favorite_delete'
+                ),
+                path(
+                    'purchases/',
+                    views.PurchaseCreateView.as_view(),
+                    name='purchase_create'
+                ),
+                path(
+                    'purchases/<int:id>/',
+                    views.PurchaseDeleteView.as_view(),
+                    name='purchase_delete'
+                ),
+                path(
+                    'subscriptions/',
+                    views.SubscribeCreateView.as_view(),
+                    name='subscribe_create'
+                ),
+                path(
+                    'subscriptions/<int:id>/',
+                    views.SubscribeDeleteView.as_view(),
+                    name='subscribe_delete'
+                )
+            ]
+        )
+    )
 ]

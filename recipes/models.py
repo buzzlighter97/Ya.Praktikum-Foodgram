@@ -1,176 +1,161 @@
-import random
-import string
-
-from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import UniqueConstraint
-from django.utils.text import slugify
+from django.utils.safestring import mark_safe
 
 from users.models import User
 
+from recipes.validators import validate_file_size
+
 
 class Recipe(models.Model):
+    """ORM-модель 'Рецепт'."""
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='recipe',
+        related_name='recipes',
         verbose_name='Автор'
     )
-    name = models.CharField(
-        max_length=200,
-        verbose_name='Название'
+    title = models.CharField(max_length=100, verbose_name='Название')
+    duration = models.SmallIntegerField(verbose_name='Время приготовления')
+    text = models.TextField(verbose_name='Описание')
+    pub_date = models.DateTimeField(
+        auto_now_add=True, verbose_name='Дата публикации'
     )
     image = models.ImageField(
-        upload_to='recipe',
-        verbose_name='Картинка'
+        upload_to="recipe_images/",
+        validators=[validate_file_size],
+        verbose_name='Изображение'
     )
-    description = models.TextField(
-        max_length=300,
-        verbose_name='Описание'
+    ingredients = models.ManyToManyField(
+        "Ingredient",
+        related_name="ingredients",
+        through="IngredientAmount",
+        verbose_name='Ингредиенты'
     )
-    tag = ArrayField(
-        base_field=models.CharField(max_length=10,),
-        verbose_name='Теги'
-    )
-    time = models.IntegerField(
-        verbose_name='Время приготовления',
-        validators=[MinValueValidator(1)]
-    )
-    date_created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
-    )
-    slug = models.SlugField(
-        max_length=200,
-        verbose_name='Слаг'
-    )
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name, allow_unicode=True)
-        letters = string.ascii_lowercase
-
-        while Recipe.objects.filter(slug=self.slug).exists():
-            self.slug += random.choice(letters)
-
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('-date_created',)
-
-
-class Ingredient(models.Model):
-    title = models.CharField(
-        max_length=200,
-        verbose_name='Название'
-    )
-    dimension = models.CharField(
-        max_length=10,
-        verbose_name='Единица измерения'
-    )
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.title
 
+    def image_img(self):
+        if self.image:
+            return mark_safe(
+                f'<img width="90" height="50" src="{self.image.url}" />'
+            )
+        return 'Без изображения'
+
+    image_img.short_description = 'Изображение'
+
+
+class Ingredient(models.Model):
+    """ORM-модель 'Ингредиент'."""
+    title = models.CharField(max_length=100, verbose_name='Название')
+    dimension = models.CharField(
+        max_length=16, verbose_name='Eдиница измерения'
+    )
+
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'dimension'], name='unique_ingredients'
+            )
+        ]
+        ordering = ('title',)
+
+    def __str__(self):
+        return f'{self.title}, {self.dimension}'
 
 
-class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='recipe_ingredient',
-        verbose_name='Рецепт'
-    )
+class IngredientAmount(models.Model):
+    """ORM-модель 'Рецепт - Ингредиент'."""
     ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE,
-        related_name='recipe_ingredient',
-        verbose_name='Ингредиент'
-    )
-    amount = models.IntegerField(
-        verbose_name='Количество',
-        validators=[MinValueValidator(0)]
-    )
-
-    def __str__(self):
-        return f'{self.recipe} - {self.ingredient} - {self.amount}'
-
-    class Meta:
-        verbose_name = 'Количество'
-        verbose_name_plural = 'Количество'
-
-
-class ShoppingList(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shopping_list',
-        verbose_name='Пользователь'
+        Ingredient, on_delete=models.CASCADE, verbose_name='Ингредиент'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='shopping_list',
+        related_name='quantity',
         verbose_name='Рецепт'
     )
-
-    class Meta:
-        UniqueConstraint(
-            name='unique_user_shoppinglist',
-            fields=['user', 'recipe'],
-        )
-        verbose_name = 'Список покупок'
-        verbose_name_plural = 'Список покупок'
-
-
-class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower',
-        verbose_name='Пользователь'
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор',
+    amount = models.DecimalField(
+        max_digits=6,
+        decimal_places=1,
+        validators=[MinValueValidator(0, 1)],
+        verbose_name='Количество'
     )
 
     class Meta:
-        UniqueConstraint(
-            name='unique_follow',
-            fields=['user', 'author'],
-        )
-        verbose_name = 'Подписчики'
-        verbose_name_plural = 'Подписчики'
-
-    def __str__(self):
-        return f'{self.user} подписался на {self.author}'
+        verbose_name = 'Количество ингредиента'
+        verbose_name_plural = 'Количество ингредиентов'
 
 
-class Favorite(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='favourite',
-        verbose_name='Пользователь'
+class Tag(models.Model):
+    """ORM-модель 'Тег'."""
+    COLOR_ORANGE = 'orange'
+    COLOR_GREEN = 'green'
+    COLOR_PURPLE = 'purple'
+
+    SLUG_BREAKFAST = 'b'
+    SLUG_LUNCH = 'l'
+    SLUG_DINNER = 'd'
+
+    TITLE_BREAKFAST_RU = 'Завтрак'
+    TITLE_LUNCH_RU = 'Обед'
+    TITLE_DINNER_RU = 'Ужин'
+
+    TITLE_BREAKFAST_EN = 'breakfast'
+    TITLE_LUNCH_EN = 'lunch'
+    TITLE_DINNER_EN = 'dinner'
+
+    TITLE = (
+        (TITLE_BREAKFAST_RU, TITLE_BREAKFAST_RU),
+        (TITLE_LUNCH_RU, TITLE_LUNCH_RU),
+        (TITLE_DINNER_RU, TITLE_DINNER_RU)
+    )
+
+    title = models.CharField(
+        max_length=50, choices=TITLE, verbose_name='Название'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favourite',
-        verbose_name='Рецепт'
+        related_name='tags',
+        verbose_name='Рецепт',
+    )
+    slug = models.SlugField(
+        default='', editable=False, max_length=50, verbose_name='Адрес')
+    color = models.CharField(
+        max_length=50,
+        default='',
+        editable=False,
+        verbose_name='Цвет'
     )
 
     class Meta:
-        verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранное'
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
+    def __str__(self):
+        return self.title
+
+    def _generate_color_and_slug(self):
+        value = self.title
+        if value == self.TITLE_BREAKFAST_RU:
+            self.color = self.COLOR_ORANGE
+            self.slug = self.SLUG_BREAKFAST
+        elif value == self.TITLE_LUNCH_RU:
+            self.color = self.COLOR_GREEN
+            self.slug = self.SLUG_LUNCH
+        else:
+            self.color = self.COLOR_PURPLE
+            self.slug = self.SLUG_DINNER
+
+    def save(self, *args, **kwargs):
+        self._generate_color_and_slug()
+        super().save(*args, **kwargs)

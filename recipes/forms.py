@@ -1,62 +1,24 @@
 from django import forms
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient
-
-TAGS = [
-    ('breakfast', 'Завтрак'),
-    ('lunch', 'Обед'),
-    ('dinner', 'Ужин'),
-]
-
-
-class RecipeIngredientForm(forms.ModelForm):
-    class Meta:
-        model = RecipeIngredient
-        fields = ('recipe', 'ingredient', 'amount')
+from recipes.models import Recipe, Tag
 
 
 class RecipeForm(forms.ModelForm):
-    tag = forms.MultipleChoiceField(
-        required=False,
-        choices=TAGS,
+    """Класс форма для создания новых рецептов."""
+    TAG_CHOICES = (
+        (Tag.TITLE_BREAKFAST_RU, Tag.COLOR_ORANGE),
+        (Tag.TITLE_LUNCH_RU, Tag.COLOR_GREEN),
+        (Tag.TITLE_DINNER_RU, Tag.COLOR_PURPLE),
     )
-    time = forms.IntegerField(min_value=1)
+
+    tag = forms.MultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+        choices=TAG_CHOICES,
+    )
+    text = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form__textarea'})
+    )
 
     class Meta:
         model = Recipe
-        fields = ('name', 'image', 'description', 'tag', 'time')
-
-    def __init__(self, *args, **kwargs):
-        self.ingredients = []
-        self.username = kwargs.pop('username')
-        super(RecipeForm, self).__init__(*args, **kwargs)
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        for key, value in self.data.items():
-            if key in ['breakfast', 'lunch', 'dinner']:
-                cleaned_data['tag'].append(key)
-            elif (key.startswith('nameIngredient')
-                  or key.startswith('valueIngredient')):
-                self.ingredients.append(value)
-
-    def save(self, commit=True):
-        recipe = super(RecipeForm, self).save(commit=False)
-        recipe.author = self.username
-
-        recipe.save()
-
-        for i in range(0, len(self.ingredients), 2):
-            ingredient = Ingredient.objects.get(title=self.ingredients[i])
-            recipe_ingredient_form = RecipeIngredientForm(
-                {
-                    'recipe': recipe,
-                    'ingredient': ingredient,
-                    'amount': self.ingredients[i + 1]
-                }
-            )
-            if recipe_ingredient_form.is_valid():
-                recipe_ingredient_form.save()
-
-        return recipe
+        fields = ('title', 'tag', 'duration', 'text', 'image')

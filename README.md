@@ -1,43 +1,63 @@
-[![CI](https://github.com/buzzlighter97/foodgram-project/actions/workflows/main.yml/badge.svg)](https://github.com/buzzlighter97/foodgram-project/actions/workflows/main.yml)
+![foodgram workflow](https://github.com/TimofeiLytkin/foodgram-project/workflows/foodgram%20workflow/badge.svg)
+# foodgram-project
+### Сайт ["Продуктовый помощник FoodGram"](http://178.154.235.251/recipes/)
 
-# Foodgram.
+Это онлайн-сервис, где пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять 
+понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для 
+приготовления одного или нескольких выбранных блюд, совпадающие ингредиенты блюд суммируются. На страницах со списками рецептов
+работает фильтрация по тегам (завтрак, обед, ужин). В базу редварительно загружен большой список ингредиентов для рецептов.
 
-  Foodgram is a service where you can create and discover new recipes to cook.
+#### Инфраструктура
 
-# Run
-1. Install Docker and Docker Compose.
-2. Clone repository https://github.com/buzzlighter97/foodgram-project.git
-3. Rename ```.env-example``` to ```.env``` and fill it with secret values.
-4. Change working directory to foodgram-project folder and run ```docker-compose up -d```
-5. Open web container ```docker exec -it foodgram-project_web_1 bash```
-6. Run commands:
-   
-   ```python manage.py collectstatic``` - collects static to static/.
-   
-   ```python manage.py migrate``` - executes all migrations
-   
-   ```python manage.py loadingredients``` - custom manage.py command to load ingridients
-   
-   ```python manage.py createsuperuser``` - fill credentials for new django superuser.
-   
-   ```python manage.py runserver```
-4. Go to http://localhost:8080/ or http://localhost:8080/admin/ for an admin panel.
+ - Проект работает с СУБД PostgreSQL.
+ - Проект запущен на сервере в Яндекс.Облаке в трёх контейнерах: nginx, PostgreSQL и Django+Gunicorn.
+ - Контейнер с проектом обновляется на Docker Hub.
+ - В nginx настроена раздача статики, остальные запросы переадресуются в Gunicorn.
+ - Данные сохраняются в volumes.
 
-# Functionality
-* Full user authentication.
-* CRUD for recipe.
-* Filter by breakfast/lunch/dinner.  
-* Choose from a bunch of pre-installed ingredients.
-* Gather favorite recipes.
-* Follow another authors.
-* Add ingredients to shopping list.
-* Download shopping list.
+#### Стек
 
-# Stack used
-* Python
-* Django
-* Django REST Framework
-* PostgreSQL
-* Docker
-* Nginx
-* Gunicorn
+ - Python 3.9, Django 3, PostgreSQL, Gunicorn, Nginx, Docker, Яндекс.Облако(Ubuntu 20.04)
+
+### Установка
+
+#### Установка docker и docker-compose:
+
+Если у вас уже установлены docker и docker-compose, этот шаг можно пропустить, иначе можно воспользоваться официальной [инструкцией](https://docs.docker.com/engine/install/).
+
+#### Создайте файл .env с данным содержимым:
+```
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+```
+#### Запуск контейнера:
+```bash
+docker-compose up
+```
+#### Выключение контейнера:
+```bash
+docker-compose down
+```
+
+### Использование
+
+#### Применение миграции:
+```bash
+docker-compose run web python manage.py migrate
+```
+#### Сбор статических файлов:
+```bash
+docker-compose run web python manage.py collectstatic --noinput
+```
+#### Инициализация стартовых данных:
+```bash
+docker-compose run web python manage.py loaddata fixtures.json
+```
+#### Создание суперпользователя Django:
+```bash
+docker-compose run web python manage.py createsuperuser
+```

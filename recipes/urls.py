@@ -4,29 +4,20 @@ from recipes import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('recipes/<int:recipe_id>/', views.recipe_view, name='recipe_view'),
     path(
-        'author_recipes/<str:slug>/',
-        views.author_recipes,
-        name='author_recipes'
+        'recipes/<int:recipe_id>/edit/', views.recipe_edit, name='recipe_edit'
     ),
-    path('create_recipe/', views.create_recipe, name='create_recipe'),
-    path('shopping_list/', views.shopping_list, name='shopping_list'),
+    path(
+        'recipes/<int:recipe_id>/delete/',
+        views.recipe_delete,
+        name='recipe_delete',
+    ),
+    path('recipes/new/', views.create_recipe, name='create_recipe'),
+    path('recipes/<str:username>/', views.profile, name='profile'),
+    path('recipes/', views.index, name='recipes'),
     path('favorites/', views.favorites, name='favorites'),
-    path(
-        'single_recipe/<str:slug>/',
-        views.single_recipe,
-        name='single_recipe'
-    ),
-    path('edit_recipe/<str:slug>/', views.edit_recipe, name='edit_recipe'),
-    path('followers/', views.followers, name='followers'),
-    path(
-        'remove_recipe/<str:slug>/',
-        views.remove_recipe,
-        name='remove_recipe'
-    ),
-    path(
-        'download_shopping_list/',
-        views.download_shopping_list,
-        name='download_shopping_list'
-    ),
+    path('purchases/', views.shopping_list, name='purchases'),
+    path('subscriptions/', views.subscriptions, name='subscriptions'),
+    path('shoplist/', views.get_ingredients, name='shoplist'),
 ]
