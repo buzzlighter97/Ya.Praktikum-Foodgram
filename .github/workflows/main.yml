@@ -53,11 +53,10 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
-          sudo docker stop $(sudo docker ps -a -q)
-          sudo docker image prune -f
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          sudo docker stop $(sudo docker ps -a -q) --noinput
+          sudo docker image prune -f --noinput
           sudo docker-compose up -d --force-recreate
-          sudo docker-compose run web python manage.py makemigrations
-          sudo docker-compose run web python manage.py migrate
+          sudo docker-compose run web python manage.py makemigrations --noinput
+          sudo docker-compose run web python manage.py migrate --noinput
           sudo docker-compose run web python manage.py collectstatic --clear --noinput
-          sudo docker-compose run web python manage.py loaddata fixtures.json
+          sudo docker-compose run web python manage.py loaddata fixtures.json --noinput
