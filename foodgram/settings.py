@@ -11,7 +11,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = '3n5v%_kz!mj3l4o5&82xy27-qe43wy3zjw95yt8omik8+-+'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '178.154.235.251',
