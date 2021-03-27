@@ -16,7 +16,7 @@ services:
       - ./.env
 
   web:
-    build: .
+    image: peacedalubof/foodgram:latest
     restart: always
     volumes:
       - staticfiles:/code/static
