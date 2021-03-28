@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.3"
 
 volumes:
   postgres_data:
@@ -10,25 +10,20 @@ services:
     image: postgres:12.4
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-    - 5432:5432
     env_file:
       - ./.env
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      timeout: 10s
-      interval: 1s
-      retries: 10
+    restart: always
 
   web:
-    image: peacedalubof/foodgram:latest
-    restart: always
+    image: peacedalubof/foodgram-project
     volumes:
       - static:/code/static
-      - media:/code/media/
+      - media:/code/media
+    restart: always
+    expose:
+      - 8000
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     env_file:
       - ./.env
 
@@ -36,9 +31,10 @@ services:
     image: nginx:1.19.6
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - static:/code/static/
-      - media:/code/media/
+      - static:/code/static
+      - media:/code/media
     ports:
-    - "80:80"
+      - "8080:80"
     depends_on:
       - web
+    restart: always
