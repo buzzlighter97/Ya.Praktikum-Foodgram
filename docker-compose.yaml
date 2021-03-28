@@ -15,7 +15,7 @@ services:
     restart: always
 
   web:
-    image: peacedalubof/foodgram-project
+    image: peacedalubof/foodgram:latest
     volumes:
       - static:/code/static
       - media:/code/media
