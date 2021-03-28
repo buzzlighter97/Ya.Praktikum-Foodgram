@@ -24,8 +24,8 @@ services:
     image: peacedalubof/foodgram:latest
     restart: always
     volumes:
-      - ./static:/var/www/static/
-      - ./media:/var/www/media/
+      - static:/var/www/static/
+      - media:/var/www/media/
     depends_on:
       db:
         condition: service_healthy
@@ -35,8 +35,8 @@ services:
   nginx:
     image: nginx:1.19.6
     volumes:
-      - ./static:/var/www/static/
-      - ./media:/var/www/
+      - static:/var/www/static/
+      - media:/var/www/
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     ports:
       - 80:80
