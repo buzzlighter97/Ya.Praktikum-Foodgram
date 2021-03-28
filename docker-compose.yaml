@@ -2,7 +2,7 @@ version: '3.8'
 
 volumes:
   postgres_data:
-  staticfiles:
+  static:
   media:
 
 services:
@@ -24,8 +24,8 @@ services:
     image: peacedalubof/foodgram:latest
     restart: always
     volumes:
-      - ./static:/code/static/
-      - ./media:/code/media/
+      - ./static:/var/www/static/
+      - ./media:/var/www/media/
     depends_on:
       db:
         condition: service_healthy
