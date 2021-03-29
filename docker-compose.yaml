@@ -4,6 +4,7 @@ volumes:
   postgres_data:
   static:
   media:
+  nginx_conf:
 
 services:
   db:
@@ -20,25 +21,26 @@ services:
       interval: 1s
       retries: 10
 
-  web:
-    image: peacedalubof/foodgram:latest
+  image: peacedalubof/foodgram:latest
     restart: always
+    env_file:
+      - ./.env
     volumes:
-      - ./static:/code/static/
-      - ./media:/code/media/
+      - static:/code/static
+      - media:/code/media
+      - nginx_conf:/code/nginx/
+    entrypoint: /code/entrypoint.sh
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - ./.env
 
   nginx:
     image: nginx:1.19.6
     volumes:
-      - ./static:/code/static/
-      - ./media:/code/media/
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static:/code/static
+      - media:/code/media
+      - nginx_conf:/etc/nginx/conf.d/
     ports:
-      - 80:80
+      - "80:80"
     depends_on:
       - web
