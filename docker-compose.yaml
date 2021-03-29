@@ -25,7 +25,7 @@ services:
     restart: always
     volumes:
       - static:/var/www/static/
-      - media:/var/www/media/
+      - media:/var/www/
     depends_on:
       db:
         condition: service_healthy
