@@ -24,8 +24,8 @@ services:
     image: peacedalubof/foodgram:latest
     restart: always
     volumes:
-      - static:/static/
-      - media:/media/
+      - static:/code/static/
+      - media:/code/media/
     depends_on:
       db:
         condition: service_healthy
