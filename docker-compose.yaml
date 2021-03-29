@@ -35,8 +35,8 @@ services:
   nginx:
     image: nginx:1.19.6
     volumes:
-      - static:/etc/nginx/var/www/static/
-      - media:/etc/nginx/var/www/
+      - static:/etc/nginx/var/www/code/static/
+      - media:/etc/nginx/var/www/code/
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     ports:
       - 80:80
