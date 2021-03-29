@@ -21,7 +21,8 @@ services:
       interval: 1s
       retries: 10
 
-  image: peacedalubof/foodgram:latest
+  web:
+    image: peacedalubof/foodgram:latest
     restart: always
     env_file:
       - ./.env
