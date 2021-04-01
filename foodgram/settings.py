@@ -9,9 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-SECRET_KEY = '3n5v%_kz!mjf34o&2xsy)zn2k7-qe43wy3zjw95yt8omik8g+-+'
+SECRET_KEY = '3n5v%_kz!mj3l4o&2xsy)zn2k7-qe43wy3zjw95yt8omik8g+-+'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '178.154.194.182',
@@ -73,7 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -84,15 +83,6 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT'),
     }
 }
-'''
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -119,10 +109,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
