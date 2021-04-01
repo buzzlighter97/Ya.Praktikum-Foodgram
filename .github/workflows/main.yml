@@ -54,6 +54,9 @@ jobs:
         passphrase: ${{ SECRETS.PASSPHRASE }}
         script: |
           sudo docker stop $(sudo docker ps -a -q)
-          sudo docker image prune -f
+          sudo docker image rm -f $(sudo docker image ls -q)
+          sudo docker system prune -f
+          sudo docker volume rm $(sudo docker volume ls -q)
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
           sudo docker-compose up -d --force-recreate
+          sudo docker-compose run web python manage.py loaddata fixtures.json
