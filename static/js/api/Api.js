@@ -116,8 +116,9 @@ removeFavorites (id) {
           return Promise.reject(e.statusText)
       })
 }
-  getIngredients  (text)  {
-      return fetch(`/api/v1/ingredients?query=${text}`, {
+
+getIngredients(text)  {
+      return fetch(`/api/v1/ingredients?search=${text}`, {
           headers: {
               'Content-Type': 'application/json'
           }
