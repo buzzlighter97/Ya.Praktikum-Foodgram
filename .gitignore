@@ -1,4 +1,5 @@
 .git/*
+.vscode/
 venv/
 .venv
 .venv/
@@ -17,5 +18,6 @@ __pycache__/
 media/
 
 db.sqlite3
-
-.vscode/
+.vscode
+vscode
+vscode/
