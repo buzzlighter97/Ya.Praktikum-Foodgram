@@ -111,8 +111,7 @@ removeFavorites (id) {
 }
 
 getIngredients(text)  {
-  return fetch(`/api/v1/ingredients?query=${text}`, {
-    method: 'POST',
+  return fetch(`/api/v1/ingredients?search=${text}`, {
     headers: {
       'Content-Type': 'application/json'
     }
