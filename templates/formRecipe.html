@@ -74,7 +74,7 @@
                        id="{{ form.duration.id_for_label }}"
                        name="{{ form.duration.html_name }}"
                        value="{{ form.duration.value|default_if_none:'' }}"
-                       class="form__input" required>
+                       class="form__input" min="0" required>
                 <label for="{{ form.duration.id_for_label }}" class="form__label">минут</label>
                 <span class="form__error">{{ form.duration.errors }}</span>
             </div>
