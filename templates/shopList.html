@@ -28,6 +28,7 @@
     <a href="{% url 'shoplist' %}"><button class="button button_style_blue">Скачать список</button></a>
     {% else %}
     <a href="{% url 'index' %}"><button class="button button_style_blue">Добавить покупки</button></a>
+    {% endif %}
 </div>
 {% endblock content %}
 {% block style %}
