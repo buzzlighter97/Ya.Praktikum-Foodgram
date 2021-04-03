@@ -24,11 +24,7 @@
         {% endthumbnail %}
         {% endfor %}
     </ul>
-    {% if recipe_list %}
     <a href="{% url 'shoplist' %}"><button class="button button_style_blue">Скачать список</button></a>
-    {% else %}
-    <a href="{% url 'index' %}"><button class="button button_style_blue">Добавить покупки</button></a>
-    {% endif %}
 </div>
 {% endblock content %}
 {% block style %}
@@ -36,5 +32,5 @@
     <script src="{% static 'js/components/Header.js' %}"></script>
     <script src="{% static 'js/components/ShopList.js' %}"></script>
     <script src="{% static 'js/api/Api.js' %}"></script>
-    <script src="{% static 'js/shopList.js' %}"></script>
+    <script src="{% static 'shopList.js' %}"></script>
 {% endblock style %}

@@ -7,6 +7,7 @@ getPurchases () {
   return fetch(`/api/v1/purchases/`, {
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     }
   })
     .then( e => {
@@ -21,6 +22,7 @@ addPurchases (id) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     },
     body: JSON.stringify({
       id: id
@@ -38,6 +40,7 @@ removePurchases (id){
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     }
   })
     .then( e => {
@@ -52,6 +55,7 @@ addSubscriptions(id) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     },
     body: JSON.stringify({
       id: id
@@ -69,6 +73,7 @@ removeSubscriptions (id) {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     }
   })
     .then( e => {
@@ -83,6 +88,7 @@ addFavorites (id)  {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     },
     body: JSON.stringify({
       id: id
@@ -100,6 +106,7 @@ removeFavorites (id) {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
     }
   })
       .then( e => {
@@ -109,18 +116,17 @@ removeFavorites (id) {
           return Promise.reject(e.statusText)
       })
 }
-
-getIngredients(text)  {
-  return fetch(`/api/v1/ingredients?search=${text}`, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-  .then( e => {
-    if(e.ok) {
-      return e.json()
-    }
-    return Promise.reject(e.statusText)
-    })
+  getIngredients  (text)  {
+      return fetch(`/api/v1/ingredients?search=${text}`, {
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      })
+          .then( e => {
+              if(e.ok) {
+                  return e.json()
+              }
+              return Promise.reject(e.statusText)
+          })
   }
 }

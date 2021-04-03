@@ -39,8 +39,7 @@ function Ingredients() {
             const elem = document.createElement('div');
             elem.classList.add('form__field-item-ingredient');
             elem.id = `ing_${cur}`;
-            data.value = Math.abs(data.value);
-            elem.innerHTML = `<span> ${data.name} ${data.value}${data.units}</span><span class="form__field-item-delete"></span>
+            elem.innerHTML = `<span> ${data.name} ${data.value}${data.units}</span> <span class="form__field-item-delete"></span>
                              <input id="nameIngredient_${cur}" name="nameIngredient_${cur}" type="hidden" value="${data.name}">
                              <input id="valueIngredient_${cur}" name="valueIngredient_${cur}" type="hidden" value="${data.value}">
                              <input id="unitsIngredient_${cur}" name="unitsIngredient_${cur}" type="hidden" value="${data.units}">`;
@@ -54,7 +53,7 @@ function Ingredients() {
     const eventDelete = (e) => {
         if(e.target.classList.contains('form__field-item-delete')) {
             const item = e.target.closest('.form__field-item-ingredient');
-            item.removeEventListener('click', eventDelete);
+            item.removeEventListener('click',eventDelete);
             item.remove()
         };
     };

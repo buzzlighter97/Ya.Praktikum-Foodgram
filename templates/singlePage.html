@@ -35,11 +35,9 @@
             <div class="single-card__items single-card__items_column">
                 <p class="single-card__text"><span class="icon-time"></span>{{ recipe.duration }} мин.</p>
                 <ul class="single-card__items">
-                    <li class="single-card__item"><p class="single-card__text"><span class="icon-user"></span><a href="{% url 'profile' recipe.author.username %}">{{ recipe.author.get_full_name }}</a></p></li>
+                    <li class="single-card__item"><p class="single-card__text"><span class="icon-user"></span>{{ recipe.author.get_full_name }}</p></li>
                     {% if request.user.is_authenticated %}
-                        {% if recipe.author.username == request.user.username %}
-                            <li class="single-card__item">  <a style="margin-left: 2.5em" href="{% url 'recipe_edit' recipe.id %}" class="single-card__text">Редактировать рецепт</a></li>
-                        {% endif %}
+                    <li class="single-card__item">  <a style="margin-left: 2.5em" href="{% url 'recipe_edit' recipe.id %}" class="single-card__text">Редактировать рецепт</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -85,5 +83,5 @@
     <script src="{% static 'js/components/SingleCard.js' %}"></script>
     <script src="{% static 'js/components/Header.js' %}"></script>
     <script src="{% static 'js/api/Api.js' %}"></script>
-    <script src="{% static 'js/singlePage.js' %}"></script>
+    <script src="{% static 'singlePage.js' %}"></script>
 {% endblock style %}
