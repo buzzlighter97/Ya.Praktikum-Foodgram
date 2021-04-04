@@ -19,4 +19,5 @@ def validate_not_empty(value):
         raise forms.ValidationError(
             'Добавьте, пожалуйста, ингредиенты.',
             params={'value': value},
-        )  
+        )
+        
