@@ -20,4 +20,3 @@ def validate_not_empty(value):
             'Добавьте, пожалуйста, ингредиенты.',
             params={'value': value},
         )
-        
