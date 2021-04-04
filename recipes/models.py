@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 
 from users.models import User
 
-from recipes.validators import validate_file_size
+from recipes.validators import validate_file_size, validate_not_empty
 
 
 class Recipe(models.Model):
@@ -31,7 +31,7 @@ class Recipe(models.Model):
         related_name="ingredients",
         through="IngredientAmount",
         verbose_name='Ингредиенты',
-        blank=False, null=False
+        validators=[validate_not_empty]
     )
 
     class Meta:
