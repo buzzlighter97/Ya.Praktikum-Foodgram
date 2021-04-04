@@ -43,19 +43,16 @@ def create_recipe(request):
         for tag in tags:
             recipe_tag = Tag(recipe=recipe, title=tag)
             recipe_tag.save()
-
-        if ingredients.keys():
-            for key, value in ingredients.items():
-                ingredient = get_object_or_404(Ingredient, title=key)
-                recipe_ing = IngredientAmount(
-                    recipe=recipe, ingredient=ingredient, amount=value
-                )
-                recipe_ing.save()
-        else:
-            raise forms.ValidationError("Добавьте ингредиенты.")
+        
+        for key, value in ingredients.items():
+            ingredient = get_object_or_404(Ingredient, title=key)
+            recipe_ing = IngredientAmount(
+                recipe=recipe, ingredient=ingredient, amount=value
+            )
+            recipe_ing.save()
         form.save_m2m()
         return redirect('recipes')
-    return render(request, 'formRecipe.html', {'form': form})
+    return render(request, 'formRecipe.html', {'form': form, 'ingredients_error_message': 'Добавьте ингредиенты!'})
 
 
 def recipe_view(request, recipe_id):
