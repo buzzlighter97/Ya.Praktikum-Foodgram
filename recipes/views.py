@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
+from django import forms
 from django.shortcuts import get_object_or_404, redirect, render
 
 from foodgram.settings import RECIPES_ON_PAGE
@@ -33,6 +34,8 @@ def create_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
     user = get_object_or_404(User, username=request.user)
     ingredients = get_dict_ingredients(request)
+    if not ingredients.keys():
+        raise forms.ValidationError("Добавьте ингредиенты.")
     if form.is_valid() and ingredients.keys():
         recipe = form.save(commit=False)
         recipe.author = user
