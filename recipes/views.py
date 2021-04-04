@@ -2,7 +2,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
-from django import forms
 from django.shortcuts import get_object_or_404, redirect, render
 
 from foodgram.settings import RECIPES_ON_PAGE
@@ -43,7 +42,7 @@ def create_recipe(request):
         for tag in tags:
             recipe_tag = Tag(recipe=recipe, title=tag)
             recipe_tag.save()
-        
+
         for key, value in ingredients.items():
             ingredient = get_object_or_404(Ingredient, title=key)
             recipe_ing = IngredientAmount(
@@ -52,7 +51,9 @@ def create_recipe(request):
             recipe_ing.save()
         form.save_m2m()
         return redirect('recipes')
-    return render(request, 'formRecipe.html', {'form': form, 'ingredients_error_message': 'Добавьте ингредиенты!'})
+    return render(request, 'formRecipe.html',
+                 {'form': form,
+                 'ingredients_error_message': 'Добавьте ингредиенты!'})
 
 
 def recipe_view(request, recipe_id):
