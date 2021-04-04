@@ -54,7 +54,7 @@
                         <input type="text" id="nameIngredient" class="form__input">
                         <div class="form__dropdown-items"></div>
                     </div>
-                    <input type="number" id="cantidad" class="form__input" min="0">
+                    <input type="number" id="cantidad" class="form__input" min="1">
                     <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
                 </div>
                 <div class="form__field-group-ingredientes-container">
@@ -74,7 +74,8 @@
                        id="{{ form.duration.id_for_label }}"
                        name="{{ form.duration.html_name }}"
                        value="{{ form.duration.value|default_if_none:'' }}"
-                       class="form__input" required>
+                       class="form__input"
+                       min="1" required>
                 <label for="{{ form.duration.id_for_label }}" class="form__label">минут</label>
                 <span class="form__error">{{ form.duration.errors }}</span>
             </div>
