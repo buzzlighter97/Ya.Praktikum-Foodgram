@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from django import forms
 
 
 def validate_file_size(image):

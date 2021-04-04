@@ -5,7 +5,7 @@ from typing_extensions import Required
 
 from users.models import User
 
-from recipes.validators import validate_file_size, validate_not_empty
+from recipes.validators import validate_file_size
 
 
 class Recipe(models.Model):
