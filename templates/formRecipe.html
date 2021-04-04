@@ -47,6 +47,7 @@
             </div>
         </div>
         <div class="form__group">
+            <div><h1>НЕ ЗАБУДЬТЕ ДОБАВИТЬ ИНГРЕДИЕНТЫ!</h1></div>
             <label for="nameIngredient" class="form__label">Ингредиенты</label>
             <div class="form__field-group">
                 <div class="form__field-group-ingredientes">
@@ -57,11 +58,6 @@
                     <input type="number" id="cantidad" class="form__input" min="1">
                     <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
                 </div>
-                {% if ingredients_error_message %}
-                    <div>
-                        <h3>{{ ingredients_error_message }}</h3>
-                    </div>
-                {% endif %}
                 <div class="form__field-group-ingredientes-container">
                 </div>
                 <span class="form__ingredient-link" id="addIng">Добавить ингредиент</span>
