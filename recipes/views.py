@@ -34,8 +34,6 @@ def create_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
     user = get_object_or_404(User, username=request.user)
     ingredients = get_dict_ingredients(request)
-    if not ingredients.keys():
-        raise forms.ValidationError("Добавьте ингредиенты.")
     if form.is_valid() and ingredients.keys():
         recipe = form.save(commit=False)
         recipe.author = user
@@ -46,12 +44,15 @@ def create_recipe(request):
             recipe_tag = Tag(recipe=recipe, title=tag)
             recipe_tag.save()
 
-        for key, value in ingredients.items():
-            ingredient = get_object_or_404(Ingredient, title=key)
-            recipe_ing = IngredientAmount(
-                recipe=recipe, ingredient=ingredient, amount=value
-            )
-            recipe_ing.save()
+        if ingredients.keys():
+            for key, value in ingredients.items():
+                ingredient = get_object_or_404(Ingredient, title=key)
+                recipe_ing = IngredientAmount(
+                    recipe=recipe, ingredient=ingredient, amount=value
+                )
+                recipe_ing.save()
+        else:
+            raise forms.ValidationError("Добавьте ингредиенты.")
         form.save_m2m()
         return redirect('recipes')
     return render(request, 'formRecipe.html', {'form': form})
