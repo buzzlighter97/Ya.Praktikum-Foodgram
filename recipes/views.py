@@ -52,8 +52,7 @@ def create_recipe(request):
         form.save_m2m()
         return redirect('recipes')
     return render(request, 'formRecipe.html',
-                 {'form': form,
-                 'ingredients_error_message': 'Добавьте ингредиенты!'})
+                 {'form': form, 'ingr_error': 'Добавьте ингредиенты!'})
 
 
 def recipe_view(request, recipe_id):
