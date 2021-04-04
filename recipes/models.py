@@ -30,7 +30,8 @@ class Recipe(models.Model):
         "Ingredient",
         related_name="ingredients",
         through="IngredientAmount",
-        verbose_name='Ингредиенты'
+        verbose_name='Ингредиенты',
+        blank=False, null=False
     )
 
     class Meta:
