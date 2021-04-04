@@ -33,7 +33,7 @@ def create_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
     user = get_object_or_404(User, username=request.user)
     ingredients = get_dict_ingredients(request)
-    if form.is_valid():
+    if form.is_valid() and ingredients.keys():
         recipe = form.save(commit=False)
         recipe.author = user
         recipe.save()
