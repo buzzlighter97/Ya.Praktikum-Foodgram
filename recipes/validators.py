@@ -12,11 +12,3 @@ def validate_file_size(image):
         )
     else:
         return image
-
-
-def validate_not_empty(value):
-    if value == '':
-        raise forms.ValidationError(
-            'Добавьте, пожалуйста, ингредиенты.',
-            params={'value': value},
-        )

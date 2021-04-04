@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.safestring import mark_safe
+from typing_extensions import Required
 
 from users.models import User
 
@@ -31,7 +32,7 @@ class Recipe(models.Model):
         related_name="ingredients",
         through="IngredientAmount",
         verbose_name='Ингредиенты',
-        validators=[validate_not_empty]
+        required=True
     )
 
     class Meta:
