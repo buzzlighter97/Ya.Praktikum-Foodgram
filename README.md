@@ -1,7 +1,7 @@
 [![foodgram_workflow](https://github.com/buzzlighter97/foodgram-project/actions/workflows/main.yml/badge.svg)](https://github.com/buzzlighter97/foodgram-project/actions/workflows/main.yml)
 # foodgram-project 
 
-### Сайт ["Продуктовый помощник FoodGram"](http://http://178.154.194.182/) 
+### Сайт ["Продуктовый помощник FoodGram"](http://178.154.194.182/) 
  
 Это веб-приложение, где пользователи смогут публиковать свои собственные рецепты, подписываться на рецепты других пользователей, добавлять  
 понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать список ингридиентов, необходимых для  
