@@ -1,5 +1,4 @@
 .git/*
-.vscode/
 venv/
 .venv
 .venv/
@@ -21,5 +20,6 @@ db.sqlite3
 .vscode
 vscode
 vscode/
+.vscode/
 
 github_script.sh
